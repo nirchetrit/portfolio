@@ -1,0 +1,12 @@
+.node {
+  border: 1px solid grey;
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+}
+.node.start {
+  background-color: green;
+}
+.node.finish {
+  background-color: red;
+}

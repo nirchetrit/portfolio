@@ -1,0 +1,7 @@
+.table-row {
+  display: flex;
+}
+.table-row .node:nth-child(2n) {
+  margin-left: -1px;
+  margin-right: -1px;
+}

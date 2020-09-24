@@ -1,0 +1,4 @@
+.table .table-row:nth-child(2n) {
+  margin-top: -1px;
+  margin-bottom: -1px;
+}
