@@ -5,8 +5,17 @@
   cursor: pointer;
 }
 .node.start {
-  background-color: green;
+  background-color: green !important;
 }
 .node.finish {
-  background-color: red;
+  background-color: red !important;
+}
+.node.wall {
+  background-color: grey;
+}
+.node.visited {
+  background-color: orange;
+}
+.node.solution {
+  background-color: blue;
 }

@@ -68,7 +68,9 @@ export default () => {
           <Translate></Translate>
         </Route>
         <Route path="/pathfinding">
-          <PathFinding></PathFinding>
+          <div className="ui container">
+            <PathFinding></PathFinding>
+          </div>
         </Route>
       </div>
     </div>

@@ -4,7 +4,10 @@ const Node = ({ node }) => {
   //   console.log("asdokj", node);
   const isStart = node.isStart ? "start" : "";
   const isFinish = node.isFinish ? "finish" : "";
-  const className = `node ${isStart} ${isFinish}`;
-  return <div className={className}></div>;
+  const isWall = node.isWall ? "wall" : "";
+  const isSolution = node.isSolution ? "solution" : "";
+  const isVisited = node.isVisited ? "visited" : "";
+  const className = `node ${isStart} ${isFinish} ${isWall} ${isVisited} ${isSolution}`;
+  return <div className={className}>{node.weight}</div>;
 };
 export default Node;
