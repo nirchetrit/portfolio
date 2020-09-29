@@ -18,6 +18,9 @@ const Header = () => {
       <Link href="/pathfinding" className="item">
         path finding
       </Link>
+      <Link href="/testpage" className="item">
+        test page
+      </Link>
     </div>
   );
 };

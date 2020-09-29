@@ -8,6 +8,10 @@ const Node = ({ node }) => {
   const isSolution = node.isSolution ? "solution" : "";
   const isVisited = node.isVisited ? "visited" : "";
   const className = `node ${isStart} ${isFinish} ${isWall} ${isVisited} ${isSolution}`;
-  return <div className={className}>{node.weight}</div>;
+  return (
+    <div className={className} onClick={node.onClick}>
+      {node.weight}
+    </div>
+  );
 };
 export default Node;

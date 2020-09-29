@@ -1,5 +1,6 @@
 .table-row {
   display: flex;
+  flex-direction: row;
 }
 .table-row .node:nth-child(2n) {
   margin-left: -1px;

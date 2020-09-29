@@ -20,63 +20,81 @@
 // 20                  dist[v] ← alt
 // 21                  prev[v] ← u
 // 22
+
+import { FibonacciHeap } from "@tyriar/fibonacci-heap";
+
 // 23      return dist[], prev[]
 const dijkstra = (grid, startNode, finishNode) => {
-  if (!grid || !startNode || !finishNode || startNode === finishNode) {
-    return false;
-  }
-  let solution = grid.slice();
-  let q = [];
-  solution.forEach((row) => {
-    row.nodes.forEach((v) => {
-      v.dist = Infinity;
-      v.prev = undefined;
-      q.push(v);
+  let visitedNodesByOrder = [];
+  let fib = new FibonacciHeap();
+  let dist = [];
+  let prev = {};
+  var q = [];
+  grid.forEach((row) => {
+    row.forEach((v) => {
+      if (!v.isWall) {
+        dist[v.index] = Infinity;
+        prev[v.index] = undefined;
+        q.push(v.index);
+      }
     });
   });
-  solution[startNode.row].nodes[startNode.col].dist = 0;
+  fib.insert(0, startNode);
+
   while (q.length) {
-    q.sort((a, b) => {
-      return a.dist - b.dist;
-    });
-    var u = q.shift();
-    u.isVisited = true;
-    if (u === finishNode) {
-      return solution;
+    let u = fib.extractMinimum(); /// this is the node with min dist
+    visitedNodesByOrder.push(u.value);
+    for (let i = 0; i < q.length; i++) {
+      ///remove u from q
+      if (q[i] === u.value.index) {
+        q.splice(i, 1);
+      }
     }
-    var neighbours = getNeighbours(u, solution);
-    for (let index = 0; index < neighbours.length; index++) {
-      const v = neighbours[index];
-      let alt = u.dist + v.weight;
-      if (alt < v.dist) {
-        v.dist = alt;
-        v.prev = u;
+    if (u.value === finishNode) {
+      prev[startNode.index] = undefined;
+      return [dist, prev, visitedNodesByOrder];
+    }
+
+    var neighbours = getNeighbours(u.value, grid);
+
+    for (let i = 0; i < neighbours.length; i++) {
+      let v = neighbours[i];
+      if (!v.isWall && v !== startNode) {
+        let alt = u.key + v.weight + 1;
+        if (alt < dist[v.index]) {
+          dist[v.index] = alt;
+          fib.insert(alt, v);
+          prev[v.index] = u.value.index;
+        }
       }
     }
   }
-  return solution;
+
+  prev[startNode.index] = undefined;
+  return [dist, prev, visitedNodesByOrder];
 };
 export default dijkstra;
 
 const getNeighbours = (node, grid) => {
   const neighbours = [];
   const height = grid.length;
-  const width = grid[0].nodes.length;
-  if (node.row - 1 >= 0 && !grid[node.row - 1].nodes[node.col].isVisited) {
-    const neighbourNode = grid[node.row - 1].nodes[node.col];
+  const width = grid[0].length;
+  if (node.row - 1 >= 0) {
+    const neighbourNode = grid[node.row - 1][node.col];
     neighbours.push(neighbourNode);
   }
-  if (node.row + 1 < height && !grid[node.row + 1].nodes[node.col].isVisited) {
-    const neighbourNode = grid[node.row + 1].nodes[node.col];
+  if (node.row + 1 < height) {
+    const neighbourNode = grid[node.row + 1][node.col];
     neighbours.push(neighbourNode);
   }
-  if (node.col - 1 >= 0 && !grid[node.row].nodes[node.col - 1].isVisited) {
-    const neighbourNode = grid[node.row].nodes[node.col - 1];
+  if (node.col - 1 >= 0) {
+    const neighbourNode = grid[node.row][node.col - 1];
     neighbours.push(neighbourNode);
   }
-  if (node.col + 1 < width && !grid[node.row].nodes[node.col + 1].isVisited) {
-    const neighbourNode = grid[node.row].nodes[node.col + 1];
+  if (node.col + 1 < width) {
+    const neighbourNode = grid[node.row][node.col + 1];
     neighbours.push(neighbourNode);
   }
+
   return neighbours;
 };

@@ -3,6 +3,9 @@
   width: 24px;
   height: 24px;
   cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 .node.start {
   background-color: green !important;

@@ -3,6 +3,7 @@ import Accordion from "./components/Accordion";
 import Search from "./components/Search";
 import DropDown from "./components/DropDown";
 import Translate from "./components/Translate";
+import TestPage from "./components/TestPage";
 import Route from "./components/Route";
 import Header from "./components/Header";
 import PathFinding from "./components/PathFinding/PathFinding";
@@ -70,6 +71,11 @@ export default () => {
         <Route path="/pathfinding">
           <div className="ui container">
             <PathFinding></PathFinding>
+          </div>
+        </Route>
+        <Route path="/testpage">
+          <div className="ui container">
+            <TestPage></TestPage>
           </div>
         </Route>
       </div>

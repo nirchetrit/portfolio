@@ -3,32 +3,93 @@ import "./PathFinding.css";
 import Table from "./Table";
 import dijkstra from "../../algorithms/dijkstra";
 import bfs from "../../algorithms/bestfirstsearch";
+import aStar from "../../algorithms/aStar";
 
 import DropDown from "../DropDown";
+import { max, min, sluDependencies } from "mathjs";
 
 const algoOptions = [
   { label: "Dijkstra", value: "dijkstra" },
   { label: "A*", value: "a*" },
   { label: "BFS", value: "bfs" },
 ];
+const defaultConfiguration = {
+  WIDTH: 3,
+  HEIGHT: 3,
+  WEIGHTS: 0,
+};
 
 const PathFinding = () => {
   const [algoSelected, setAlgoSelected] = useState(algoOptions[0]);
-  const [height, setHeight] = useState(20);
-  const [width, setWidth] = useState(20);
   const [nodes, setNodes] = useState([]);
-  const [startRow, setStartRow] = useState(1);
-  const [startCol, setStartCol] = useState(1);
-  const [finishRow, setFinishRow] = useState(5);
-  const [finishCol, setFinishCol] = useState(19);
+  const [height, setHeight] = useState(defaultConfiguration.HEIGHT);
+  const [width, setWidth] = useState(defaultConfiguration.WIDTH);
+  const [startRow, setStartRow] = useState(0);
+  const [startCol, setStartCol] = useState(0);
+  const [finishRow, setFinishRow] = useState(height - 1);
+  const [finishCol, setFinishCol] = useState(width - 1);
+  // const [defaultVals, setDefaultVals] = useState(false);
+  //TODO FIX - SHOULD BE REF?
   const [randomWeights, setRandomWeights] = useState(false);
-  const drawDeafultGrid = () => {
-    const nodes = [];
+
+  ////FIX
+
+  ///It's rerendering for every single line ??
+  const resetGrid = () => {
+    setHeight(defaultConfiguration.HEIGHT);
+    setWidth(defaultConfiguration.HEIGHT);
+    setStartRow(0);
+    setStartCol(0);
+    setFinishRow(height - 1);
+    setFinishCol(width - 1);
+    setRandomWeights(false);
+
+    drawGrid();
+  };
+
+  const test = () => {
+    console.log("test button");
+  };
+
+  const editNode = (row, col, attrs) => {
+    setNodes((prevNodes) =>
+      prevNodes.map((currCol) => {
+        return currCol.map((node) => {
+          if (node.col === col && node.row === row) {
+            for (let attr in attrs) {
+              let value = attrs[attr];
+              node[attr] = value;
+            }
+
+            // for (var prop in attr[x]) {
+            // node[prop] = attr[x][prop];
+            // }
+            // }
+          }
+          return node;
+        });
+      })
+    );
+  };
+
+  const drawGrid = () => {
+    // if (defaultVals) {
+    //   var heightDef = defaultConfiguration.HEIGHT;
+    //   var widthDef = defaultConfiguration.WIDTH;
+    //   var startRowDef = 0;
+    //   var startColDef = 0;
+    //   var finishRowDef = heightDef - 1;
+    //   var finishColDef = widthDef - 1;
+    //   var defRandomWeights = false;
+    // }
+
+    var nodes = [];
     for (let row = 0; row < height; row++) {
-      let currentRow = [];
+      var currentRow = [];
       for (let col = 0; col < width; col++) {
+        ///read on clousre
         const currentNode = {
-          index: `${row},${col}`,
+          index: row * width + col,
           row,
           col,
           isStart: row === startRow && col === startCol,
@@ -36,57 +97,93 @@ const PathFinding = () => {
           isVisited: false,
           isWall: false,
           isSolution: false,
-          weight: randomWeights ? Math.floor(Math.random() * 10) : 1,
+          weight: randomWeights
+            ? Math.floor(Math.random() * 10)
+            : defaultConfiguration.WEIGHTS,
+          //todo fix should be this
+          onClick: () => editNode(row, col, { isWall: true }),
         };
         currentRow.push(currentNode);
       }
-      nodes.push({ rowNum: row, nodes: currentRow });
+      nodes.push(currentRow);
     }
     setNodes(nodes);
   };
 
-  useEffect(drawDeafultGrid, [
+  useEffect(drawGrid, [
     height,
     width,
-    startRow,
-    startCol,
     randomWeights,
+    startCol,
+    startRow,
     finishRow,
     finishCol,
   ]);
-
-  const getThePrevPath = (node, grid) => {
-    if (!node.prev) {
-      return grid;
+  const colorPrevPath = async (map, node, ms) => {
+    let prevNodeIndex = map[node.index];
+    if (!prevNodeIndex) {
+      return;
     }
-    node.isSolution = true;
-    return getThePrevPath(node.prev, grid);
+    let x = prevNodeIndex % width;
+    let y = Math.floor((prevNodeIndex / width) % height);
+    const prevNode = nodes[y][x];
+    await new Promise((r) => setTimeout(r, ms));
+    editNode(prevNode.row, prevNode.col, { isSolution: true });
+    return colorPrevPath(map, prevNode, ms);
+  };
+  const colorVisitedNodes = async (visitedNodesByOrder, path, ms) => {
+    for (let i = 0; i < visitedNodesByOrder.length; i++) {
+      await new Promise((r) => setTimeout(r, ms));
+      let node = visitedNodesByOrder[i];
+      editNode(node.row, node.col, { isVisited: true });
+    }
+    for (let i = 0; i < visitedNodesByOrder.length; i++) {
+      await new Promise((r) => setTimeout(r, ms));
+      let node = visitedNodesByOrder[i];
+      if (path.includes(node)) {
+        editNode(node.row, node.col, { isSolution: true });
+      }
+    }
+  };
+  const getSolutionPath = (map, finishNode) => {
+    let path = [];
+    let prevNodeIndex = map[finishNode.index];
+    while (prevNodeIndex !== undefined) {
+      let x = prevNodeIndex % width;
+      let y = Math.floor((prevNodeIndex / width) % height);
+      const prevNode = nodes[y][x];
+      path.push(prevNode);
+      prevNodeIndex = map[prevNode.index];
+    }
+    return path;
   };
 
   const onSolveButtonClick = () => {
     var solution;
+    var [dist, prev, visitedNodesByOrder] = [];
     switch (algoSelected.value) {
       case "dijkstra":
-        solution = dijkstra(
+        [dist, prev, visitedNodesByOrder] = dijkstra(
           nodes,
-          nodes[startRow].nodes[startCol],
-          nodes[finishRow].nodes[finishCol]
+          nodes[startRow][startCol],
+          nodes[finishRow][finishCol]
         );
-        getThePrevPath(solution[finishRow].nodes[finishCol], solution);
+        let path = getSolutionPath(prev, nodes[finishRow][finishCol]);
+        // let path = constructPathFromPrev(prev,nodes[finishRow][finishCol])
+        colorVisitedNodes(visitedNodesByOrder, path, 10); //time
+
+        // colorPrevPath(prev, nodes[finishRow][finishCol], 500);
         break;
       case "bfs":
-        solution = bfs(
-          nodes,
-          nodes[startRow].nodes[startCol],
-          nodes[finishRow].nodes[finishCol]
-        );
-        getThePrevPath(solution[finishRow].nodes[finishCol], solution);
+        alert("not yet shlomi");
         break;
       default:
-        solution = nodes;
-        alert("yet to be supported");
+        [dist, prev, visitedNodesByOrder] = aStar(
+          nodes,
+          nodes[startRow][startCol],
+          nodes[finishRow][finishCol]
+        );
     }
-    setNodes(solution);
   };
 
   return (
@@ -102,14 +199,13 @@ const PathFinding = () => {
         <button className="ui primary button" onClick={onSolveButtonClick}>
           Solve
         </button>
-        <button className="ui button" onClick={drawDeafultGrid}>
+        <button className="ui button" onClick={resetGrid}>
           Reset
         </button>
         <button
           className="ui button"
           onClick={() => {
-            console.log("asd");
-            setRandomWeights(!randomWeights);
+            setRandomWeights(true);
           }}
         >
           Random Weights
@@ -124,18 +220,22 @@ const PathFinding = () => {
                 <div className=" field two wide">
                   <label>height</label>
                   <input
+                    type="number"
                     value={height}
+                    min={max(finishRow + 1, startRow + 1).toString()}
                     onChange={(e) => {
-                      setHeight(e.target.value);
+                      setHeight(parseInt(e.target.value));
                     }}
                   ></input>
                 </div>
                 <div className="field two wide">
                   <label>width</label>
                   <input
+                    type="number"
+                    min={max(finishCol + 1, startCol + 1).toString()}
                     value={width}
                     onChange={(e) => {
-                      setWidth(e.target.value);
+                      setWidth(parseInt(e.target.value));
                     }}
                   ></input>
                 </div>
@@ -149,18 +249,24 @@ const PathFinding = () => {
                 <div className="field two wide">
                   <label>row</label>
                   <input
+                    type="number"
+                    min="0"
+                    max={height - 1}
                     value={startRow}
                     onChange={(e) => {
-                      setStartRow(e.target.value);
+                      setStartRow(parseInt(e.target.value));
                     }}
                   ></input>
                 </div>
                 <div className="field two wide">
                   <label>column</label>
                   <input
+                    type="number"
+                    min="0"
+                    max={width - 1}
                     value={startCol}
                     onChange={(e) => {
-                      setStartCol(e.target.value);
+                      setStartCol(parseInt(e.target.value));
                     }}
                   ></input>
                 </div>
@@ -168,24 +274,30 @@ const PathFinding = () => {
             </div>
           </div>
           <div>
-            <label>Starting node</label>
+            <label>Finishing node</label>
             <div className="ui form">
               <div className="fields">
                 <div className="field two wide">
                   <label>row</label>
                   <input
+                    type="number"
+                    min="0"
+                    max={height - 1}
                     value={finishRow}
                     onChange={(e) => {
-                      setFinishRow(e.target.value);
+                      setFinishRow(parseInt(e.target.value));
                     }}
                   ></input>
                 </div>
                 <div className="field two wide">
                   <label>column</label>
                   <input
+                    type="number"
+                    min="0"
+                    max={width - 1}
                     value={finishCol}
                     onChange={(e) => {
-                      setFinishCol(e.target.value);
+                      setFinishCol(parseInt(e.target.value));
                     }}
                   ></input>
                 </div>
@@ -197,6 +309,7 @@ const PathFinding = () => {
       <div className="table">
         <Table rows={nodes}></Table>
       </div>
+      <button onClick={test}> test button</button>
     </div>
   );
 };

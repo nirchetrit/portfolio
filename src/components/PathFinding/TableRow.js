@@ -9,3 +9,7 @@ const TableRow = ({ row }) => {
   return <div className="table-row">{renderedRows}</div>;
 };
 export default TableRow;
+
+// const Map = ({ array, Component }) => array.map((obj) => <Component {...obj} />
+
+// export default Map;
