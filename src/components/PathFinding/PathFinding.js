@@ -36,7 +36,6 @@ const PathFinding = () => {
 
   ////FIX
 
-  ///It's rerendering for every single line ??
   const resetGrid = () => {
     setHeight(defaultConfiguration.HEIGHT);
     setWidth(defaultConfiguration.WIDTH);
@@ -86,7 +85,7 @@ const PathFinding = () => {
           weight: randomWeights
             ? Math.floor(Math.random() * 10)
             : defaultConfiguration.WEIGHTS,
-          onClick: () => editNode(currentNode, { isWall: true }),
+          onClick: () => editNode(currentNode, { isWall: !currentNode.isWall }),
         };
         currentRow.push(currentNode);
       }
@@ -94,7 +93,7 @@ const PathFinding = () => {
     }
     setNodes(nodes);
   };
-
+  ///only on component mount...
   useEffect(drawGrid, []);
 
   const colorVisitedNodes = async (visitedNodesByOrder, path, ms) => {

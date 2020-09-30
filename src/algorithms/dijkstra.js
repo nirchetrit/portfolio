@@ -43,9 +43,12 @@ const dijkstra = (grid, startNode, finishNode) => {
 
   while (q.length) {
     let u = fib.extractMinimum(); /// this is the node with min dist
+    if (!u) {
+      prev[startNode.index] = undefined;
+      return [dist, prev, visitedNodesByOrder];
+    }
     visitedNodesByOrder.push(u.value);
     for (let i = 0; i < q.length; i++) {
-      ///remove u from q
       if (q[i] === u.value.index) {
         q.splice(i, 1);
       }
@@ -56,7 +59,7 @@ const dijkstra = (grid, startNode, finishNode) => {
     }
 
     var neighbours = getNeighbours(u.value, grid);
-
+    console.log(neighbours);
     for (let i = 0; i < neighbours.length; i++) {
       let v = neighbours[i];
       if (!v.isWall && v !== startNode) {
