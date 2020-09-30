@@ -6,7 +6,7 @@ import bfs from "../../algorithms/bestfirstsearch";
 import aStar from "../../algorithms/aStar";
 
 import DropDown from "../DropDown";
-import { max, min, sluDependencies } from "mathjs";
+import { max, min } from "mathjs";
 
 const algoOptions = [
   { label: "Dijkstra", value: "dijkstra" },
@@ -22,6 +22,8 @@ const defaultConfiguration = {
 const PathFinding = () => {
   const [algoSelected, setAlgoSelected] = useState(algoOptions[0]);
   const [nodes, setNodes] = useState([]);
+  //form states
+
   const [height, setHeight] = useState(defaultConfiguration.HEIGHT);
   const [width, setWidth] = useState(defaultConfiguration.WIDTH);
   const [startRow, setStartRow] = useState(0);
@@ -37,13 +39,12 @@ const PathFinding = () => {
   ///It's rerendering for every single line ??
   const resetGrid = () => {
     setHeight(defaultConfiguration.HEIGHT);
-    setWidth(defaultConfiguration.HEIGHT);
+    setWidth(defaultConfiguration.WIDTH);
     setStartRow(0);
     setStartCol(0);
     setFinishRow(height - 1);
     setFinishCol(width - 1);
     setRandomWeights(false);
-
     drawGrid();
   };
 
@@ -51,38 +52,23 @@ const PathFinding = () => {
     console.log("test button");
   };
 
-  const editNode = (row, col, attrs) => {
+  const editNode = (node, attrs) => {
     setNodes((prevNodes) =>
       prevNodes.map((currCol) => {
-        return currCol.map((node) => {
-          if (node.col === col && node.row === row) {
+        return currCol.map((currNode) => {
+          if (currNode.col === node.col && currNode.row === node.row) {
             for (let attr in attrs) {
               let value = attrs[attr];
-              node[attr] = value;
+              currNode[attr] = value;
             }
-
-            // for (var prop in attr[x]) {
-            // node[prop] = attr[x][prop];
-            // }
-            // }
           }
-          return node;
+          return currNode;
         });
       })
     );
   };
 
   const drawGrid = () => {
-    // if (defaultVals) {
-    //   var heightDef = defaultConfiguration.HEIGHT;
-    //   var widthDef = defaultConfiguration.WIDTH;
-    //   var startRowDef = 0;
-    //   var startColDef = 0;
-    //   var finishRowDef = heightDef - 1;
-    //   var finishColDef = widthDef - 1;
-    //   var defRandomWeights = false;
-    // }
-
     var nodes = [];
     for (let row = 0; row < height; row++) {
       var currentRow = [];
@@ -100,8 +86,7 @@ const PathFinding = () => {
           weight: randomWeights
             ? Math.floor(Math.random() * 10)
             : defaultConfiguration.WEIGHTS,
-          //todo fix should be this
-          onClick: () => editNode(row, col, { isWall: true }),
+          onClick: () => editNode(currentNode, { isWall: true }),
         };
         currentRow.push(currentNode);
       }
@@ -110,38 +95,19 @@ const PathFinding = () => {
     setNodes(nodes);
   };
 
-  useEffect(drawGrid, [
-    height,
-    width,
-    randomWeights,
-    startCol,
-    startRow,
-    finishRow,
-    finishCol,
-  ]);
-  const colorPrevPath = async (map, node, ms) => {
-    let prevNodeIndex = map[node.index];
-    if (!prevNodeIndex) {
-      return;
-    }
-    let x = prevNodeIndex % width;
-    let y = Math.floor((prevNodeIndex / width) % height);
-    const prevNode = nodes[y][x];
-    await new Promise((r) => setTimeout(r, ms));
-    editNode(prevNode.row, prevNode.col, { isSolution: true });
-    return colorPrevPath(map, prevNode, ms);
-  };
+  useEffect(drawGrid, []);
+
   const colorVisitedNodes = async (visitedNodesByOrder, path, ms) => {
     for (let i = 0; i < visitedNodesByOrder.length; i++) {
       await new Promise((r) => setTimeout(r, ms));
       let node = visitedNodesByOrder[i];
-      editNode(node.row, node.col, { isVisited: true });
+      editNode(node, { isVisited: true });
     }
     for (let i = 0; i < visitedNodesByOrder.length; i++) {
       await new Promise((r) => setTimeout(r, ms));
       let node = visitedNodesByOrder[i];
       if (path.includes(node)) {
-        editNode(node.row, node.col, { isSolution: true });
+        editNode(node, { isSolution: true });
       }
     }
   };
@@ -159,7 +125,6 @@ const PathFinding = () => {
   };
 
   const onSolveButtonClick = () => {
-    var solution;
     var [dist, prev, visitedNodesByOrder] = [];
     switch (algoSelected.value) {
       case "dijkstra":
@@ -169,10 +134,7 @@ const PathFinding = () => {
           nodes[finishRow][finishCol]
         );
         let path = getSolutionPath(prev, nodes[finishRow][finishCol]);
-        // let path = constructPathFromPrev(prev,nodes[finishRow][finishCol])
         colorVisitedNodes(visitedNodesByOrder, path, 10); //time
-
-        // colorPrevPath(prev, nodes[finishRow][finishCol], 500);
         break;
       case "bfs":
         alert("not yet shlomi");
@@ -184,6 +146,10 @@ const PathFinding = () => {
           nodes[finishRow][finishCol]
         );
     }
+  };
+  const submitForm = (e) => {
+    e.preventDefault();
+    drawGrid();
   };
 
   return (
@@ -211,100 +177,94 @@ const PathFinding = () => {
           Random Weights
         </button>
       </div>
-      <div className="fullWidth">
-        <div className="grid-options">
-          <div>
-            <label>Grid options</label>
-            <div className="ui form ">
-              <div className="fields">
-                <div className=" field two wide">
-                  <label>height</label>
-                  <input
-                    type="number"
-                    value={height}
-                    min={max(finishRow + 1, startRow + 1).toString()}
-                    onChange={(e) => {
-                      setHeight(parseInt(e.target.value));
-                    }}
-                  ></input>
-                </div>
-                <div className="field two wide">
-                  <label>width</label>
-                  <input
-                    type="number"
-                    min={max(finishCol + 1, startCol + 1).toString()}
-                    value={width}
-                    onChange={(e) => {
-                      setWidth(parseInt(e.target.value));
-                    }}
-                  ></input>
-                </div>
+      <div className="grid-options">
+        <form onSubmit={submitForm}>
+          <div className="ui form">
+            <div className="two fields">
+              <div className="field">
+                <label>height</label>
+                <input
+                  type="number"
+                  value={height}
+                  min={max(finishRow + 1, startRow + 1).toString()}
+                  onChange={(e) => {
+                    setHeight(parseInt(e.target.value));
+                  }}
+                ></input>
+              </div>
+              <div className="field">
+                <label>width</label>
+                <input
+                  type="number"
+                  min={max(finishCol + 1, startCol + 1).toString()}
+                  value={width}
+                  onChange={(e) => {
+                    setWidth(parseInt(e.target.value));
+                  }}
+                ></input>
               </div>
             </div>
-          </div>
-          <div>
-            <label>Starting node</label>
-            <div className="ui form">
-              <div className="fields">
-                <div className="field two wide">
-                  <label>row</label>
-                  <input
-                    type="number"
-                    min="0"
-                    max={height - 1}
-                    value={startRow}
-                    onChange={(e) => {
-                      setStartRow(parseInt(e.target.value));
-                    }}
-                  ></input>
-                </div>
-                <div className="field two wide">
-                  <label>column</label>
-                  <input
-                    type="number"
-                    min="0"
-                    max={width - 1}
-                    value={startCol}
-                    onChange={(e) => {
-                      setStartCol(parseInt(e.target.value));
-                    }}
-                  ></input>
-                </div>
+            <label>Starting Node</label>
+            <div className="two fields">
+              <div className="field">
+                <label>row</label>
+                <input
+                  type="number"
+                  min="0"
+                  max={height - 1}
+                  value={startRow}
+                  onChange={(e) => {
+                    setStartRow(parseInt(e.target.value));
+                  }}
+                ></input>
+              </div>
+              <div className="field">
+                <label>column</label>
+                <input
+                  type="number"
+                  min="0"
+                  max={width - 1}
+                  value={startCol}
+                  onChange={(e) => {
+                    setStartCol(parseInt(e.target.value));
+                  }}
+                ></input>
               </div>
             </div>
-          </div>
-          <div>
-            <label>Finishing node</label>
-            <div className="ui form">
-              <div className="fields">
-                <div className="field two wide">
-                  <label>row</label>
-                  <input
-                    type="number"
-                    min="0"
-                    max={height - 1}
-                    value={finishRow}
-                    onChange={(e) => {
-                      setFinishRow(parseInt(e.target.value));
-                    }}
-                  ></input>
-                </div>
-                <div className="field two wide">
-                  <label>column</label>
-                  <input
-                    type="number"
-                    min="0"
-                    max={width - 1}
-                    value={finishCol}
-                    onChange={(e) => {
-                      setFinishCol(parseInt(e.target.value));
-                    }}
-                  ></input>
-                </div>
+            <label>Finishing Node</label>
+            <div className="two fields">
+              <div className="field">
+                <label>row</label>
+                <input
+                  type="number"
+                  min="0"
+                  max={height - 1}
+                  value={finishRow}
+                  onChange={(e) => {
+                    setFinishRow(parseInt(e.target.value));
+                  }}
+                ></input>
+              </div>
+              <div className="field">
+                <label>column</label>
+                <input
+                  type="number"
+                  min="0"
+                  max={width - 1}
+                  value={finishCol}
+                  onChange={(e) => {
+                    setFinishCol(parseInt(e.target.value));
+                  }}
+                ></input>
               </div>
             </div>
+            <input
+              className="fluid ui button"
+              type="submit"
+              value="draw the grid"
+            />
           </div>
-        </div>
+        </form>
       </div>
       <div className="table">
         <Table rows={nodes}></Table>

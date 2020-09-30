@@ -17,8 +17,9 @@
   margin-left: 6px;
 }
 .grid-options {
-  display: flex;
-  flex-direction: column;
+  align-self: flex-start;
+  /* display: flex;
+  flex-direction: column; */
 }
 .fullWidth {
   width: 100%;

@@ -1,28 +1,45 @@
 import React, { useState } from "react";
+import useInput from "../hooks/useInput";
 
 const TestPage = () => {
-  let x = {
-    0: "test",
-    1: {
-      0: "0",
-      1: "1",
-    },
+  const {
+    value: firstName,
+    bind: bindFirstName,
+    reset: resetFirstName,
+  } = useInput("");
+  const { value: lastName, bind: bindLast, reset: resetLast } = useInput(
+    "last Name"
+  );
+  const submit = (e) => {
+    e.preventDefault();
+    console.log(firstName);
+
+    console.log(lastName);
+    resetFirstName();
+    resetLast();
+    draw();
   };
-  const [nodes, setNodes] = useState(x);
-  //   setNodes(x);
-  let b = "test";
-  const testFunc = () => {
-    setNodes({
-      1: {
-        0: "10",
-        1: "11",
-      },
-    });
+  const draw = () => {
+    console.log("render");
   };
+
+  // console.log("render");
   return (
-    <div>
-      <h1>test page</h1>
-    </div>
+    <form onSubmit={submit}>
+      <div className="ui form">
+        <div className="fields">
+          <div className="field">
+            <label>first name</label>
+            <input {...bindFirstName}></input>
+          </div>
+          <div className="field">
+            <label>last name</label>
+            <input {...bindLast}></input>
+          </div>
+        </div>
+      </div>
+      <input type="submit" value="Submit" />
+    </form>
   );
 };
 export default TestPage;
