@@ -22,6 +22,8 @@
 // 22
 
 import { FibonacciHeap } from "@tyriar/fibonacci-heap";
+import { getNeighbours } from "../components/gridFuncs";
+import { removeFromArray } from "../components/util";
 
 // 23      return dist[], prev[]
 const dijkstra = (grid, startNode, finishNode) => {
@@ -48,56 +50,29 @@ const dijkstra = (grid, startNode, finishNode) => {
       return [dist, prev, visitedNodesByOrder];
     }
     visitedNodesByOrder.push(u.value);
-    for (let i = 0; i < q.length; i++) {
-      if (q[i] === u.value.index) {
-        q.splice(i, 1);
-      }
-    }
+
+    removeFromArray(q, u.value.index);
+
     if (u.value === finishNode) {
       prev[startNode.index] = undefined;
       return [dist, prev, visitedNodesByOrder];
     }
 
     var neighbours = getNeighbours(u.value, grid);
-    console.log(neighbours);
     for (let i = 0; i < neighbours.length; i++) {
       let v = neighbours[i];
-      if (!v.isWall && v !== startNode) {
-        let alt = u.key + v.weight + 1;
-        if (alt < dist[v.index]) {
-          dist[v.index] = alt;
-          fib.insert(alt, v);
-          prev[v.index] = u.value.index;
-        }
+      if (v.isWall) {
+        continue;
+      }
+      let alt = u.key + v.weight + 1;
+      if (alt < dist[v.index]) {
+        dist[v.index] = alt;
+        fib.insert(alt, v);
+        prev[v.index] = u.value.index;
       }
     }
   }
-
   prev[startNode.index] = undefined;
   return [dist, prev, visitedNodesByOrder];
 };
 export default dijkstra;
-
-const getNeighbours = (node, grid) => {
-  const neighbours = [];
-  const height = grid.length;
-  const width = grid[0].length;
-  if (node.row - 1 >= 0) {
-    const neighbourNode = grid[node.row - 1][node.col];
-    neighbours.push(neighbourNode);
-  }
-  if (node.row + 1 < height) {
-    const neighbourNode = grid[node.row + 1][node.col];
-    neighbours.push(neighbourNode);
-  }
-  if (node.col - 1 >= 0) {
-    const neighbourNode = grid[node.row][node.col - 1];
-    neighbours.push(neighbourNode);
-  }
-  if (node.col + 1 < width) {
-    const neighbourNode = grid[node.row][node.col + 1];
-    neighbours.push(neighbourNode);
-  }
-
-  return neighbours;
-};

@@ -9,7 +9,7 @@ const Node = ({ node }) => {
   const isVisited = node.isVisited ? "visited" : "";
   const className = `node ${isStart} ${isFinish} ${isWall} ${isVisited} ${isSolution}`;
   return (
-    <div className={className} onClick={node.onClick}>
+    <div className={className} onClick={() => node.onClick(node)}>
       {node.weight}
     </div>
   );

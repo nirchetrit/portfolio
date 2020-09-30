@@ -4,9 +4,9 @@ import Table from "./Table";
 import dijkstra from "../../algorithms/dijkstra";
 import bfs from "../../algorithms/bestfirstsearch";
 import aStar from "../../algorithms/aStar";
-
+import util from "../gridFuncs";
 import DropDown from "../DropDown";
-import { max, min } from "mathjs";
+import { max } from "mathjs";
 
 const algoOptions = [
   { label: "Dijkstra", value: "dijkstra" },
@@ -17,19 +17,17 @@ const defaultConfiguration = {
   WIDTH: 3,
   HEIGHT: 3,
   WEIGHTS: 0,
+  SOLVERSPEED: 0.5,
 };
 
 const PathFinding = () => {
   const [algoSelected, setAlgoSelected] = useState(algoOptions[0]);
   const [nodes, setNodes] = useState([]);
+  const [config, setConfig] = useState(util.deafultConfig);
+
   //form states
 
-  const [height, setHeight] = useState(defaultConfiguration.HEIGHT);
-  const [width, setWidth] = useState(defaultConfiguration.WIDTH);
-  const [startRow, setStartRow] = useState(0);
-  const [startCol, setStartCol] = useState(0);
-  const [finishRow, setFinishRow] = useState(height - 1);
-  const [finishCol, setFinishCol] = useState(width - 1);
+  // const [configuration, setConfig] = useState(configuration);
   // const [defaultVals, setDefaultVals] = useState(false);
   //TODO FIX - SHOULD BE REF?
   const [randomWeights, setRandomWeights] = useState(false);
@@ -37,76 +35,42 @@ const PathFinding = () => {
   ////FIX
 
   const resetGrid = () => {
-    setHeight(defaultConfiguration.HEIGHT);
-    setWidth(defaultConfiguration.WIDTH);
-    setStartRow(0);
-    setStartCol(0);
-    setFinishRow(height - 1);
-    setFinishCol(width - 1);
-    setRandomWeights(false);
-    drawGrid();
+    console.log("draw grid!");
   };
 
   const test = () => {
     console.log("test button");
   };
 
-  const editNode = (node, attrs) => {
+  const editNode = (node) => {
     setNodes((prevNodes) =>
-      prevNodes.map((currCol) => {
-        return currCol.map((currNode) => {
-          if (currNode.col === node.col && currNode.row === node.row) {
-            for (let attr in attrs) {
-              let value = attrs[attr];
-              currNode[attr] = value;
-            }
-          }
+      prevNodes.map((currRow) => {
+        return currRow.map((currNode) => {
+          if (currNode.index === node.index) currNode = node;
           return currNode;
         });
       })
     );
   };
 
-  const drawGrid = () => {
-    var nodes = [];
-    for (let row = 0; row < height; row++) {
-      var currentRow = [];
-      for (let col = 0; col < width; col++) {
-        ///read on clousre
-        const currentNode = {
-          index: row * width + col,
-          row,
-          col,
-          isStart: row === startRow && col === startCol,
-          isFinish: row === finishRow && col === finishCol,
-          isVisited: false,
-          isWall: false,
-          isSolution: false,
-          weight: randomWeights
-            ? Math.floor(Math.random() * 10)
-            : defaultConfiguration.WEIGHTS,
-          onClick: () => editNode(currentNode, { isWall: !currentNode.isWall }),
-        };
-        currentRow.push(currentNode);
-      }
-      nodes.push(currentRow);
-    }
+  ///componentDidMount
+  useEffect(() => {
+    var nodes = util.generateNodes(util.deafultConfig, (node) => {
+      editNode({ ...node, isWall: !node.isWall });
+    });
     setNodes(nodes);
-  };
-  ///only on component mount...
-  useEffect(drawGrid, []);
+  }, []);
 
-  const colorVisitedNodes = async (visitedNodesByOrder, path, ms) => {
+  const colorVisitedNodes = async (visitedNodesByOrder, prev, ms) => {
     for (let i = 0; i < visitedNodesByOrder.length; i++) {
       await new Promise((r) => setTimeout(r, ms));
-      let node = visitedNodesByOrder[i];
-      editNode(node, { isVisited: true });
+      editNode({ ...visitedNodesByOrder[i], isVisited: true });
     }
     for (let i = 0; i < visitedNodesByOrder.length; i++) {
       await new Promise((r) => setTimeout(r, ms));
       let node = visitedNodesByOrder[i];
-      if (path.includes(node)) {
-        editNode(node, { isSolution: true });
+      if (prev.includes(node)) {
+        editNode({ ...node, isSolution: true });
       }
     }
   };
@@ -114,9 +78,9 @@ const PathFinding = () => {
     let path = [];
     let prevNodeIndex = map[finishNode.index];
     while (prevNodeIndex !== undefined) {
-      let x = prevNodeIndex % width;
-      let y = Math.floor((prevNodeIndex / width) % height);
-      const prevNode = nodes[y][x];
+      let x = prevNodeIndex % nodes[0].length;
+      let y = Math.floor((prevNodeIndex / nodes[0].length) % nodes.length);
+      let prevNode = nodes[y][x];
       path.push(prevNode);
       prevNodeIndex = map[prevNode.index];
     }
@@ -127,28 +91,33 @@ const PathFinding = () => {
     var [dist, prev, visitedNodesByOrder] = [];
     switch (algoSelected.value) {
       case "dijkstra":
+        /////TODO FIX what happens if someone changes the form without saving it?
         [dist, prev, visitedNodesByOrder] = dijkstra(
           nodes,
-          nodes[startRow][startCol],
-          nodes[finishRow][finishCol]
-        );
-        let path = getSolutionPath(prev, nodes[finishRow][finishCol]);
-        colorVisitedNodes(visitedNodesByOrder, path, 10); //time
+          nodes[config.startRow][config.startCol],
+          nodes[config.finishRow][config.finishCol]
+        ); //time
         break;
       case "bfs":
         alert("not yet shlomi");
         break;
       default:
-        [dist, prev, visitedNodesByOrder] = aStar(
+        [prev, visitedNodesByOrder] = aStar(
           nodes,
-          nodes[startRow][startCol],
-          nodes[finishRow][finishCol]
+          nodes[config.startRow][config.startCol],
+          nodes[config.finishRow][config.finishCol]
         );
     }
+    let path = getSolutionPath(prev, nodes[config.finishRow][config.finishCol]);
+    colorVisitedNodes(
+      visitedNodesByOrder,
+      path,
+      defaultConfiguration.SOLVERSPEED
+    ); //time
   };
   const submitForm = (e) => {
     e.preventDefault();
-    drawGrid();
+    // drawGrid();
   };
 
   return (
@@ -184,10 +153,13 @@ const PathFinding = () => {
                 <label>height</label>
                 <input
                   type="number"
-                  value={height}
-                  min={max(finishRow + 1, startRow + 1).toString()}
+                  value={config.height}
+                  min={max(
+                    config.finishRow + 1,
+                    config.startRow + 1
+                  ).toString()}
                   onChange={(e) => {
-                    setHeight(parseInt(e.target.value));
+                    setConfig({ ...config, height: parseInt(e.target.value) });
                   }}
                 ></input>
               </div>
@@ -195,10 +167,13 @@ const PathFinding = () => {
                 <label>width</label>
                 <input
                   type="number"
-                  min={max(finishCol + 1, startCol + 1).toString()}
-                  value={width}
+                  min={max(
+                    config.finishCol + 1,
+                    config.startCol + 1
+                  ).toString()}
+                  value={config.width}
                   onChange={(e) => {
-                    setWidth(parseInt(e.target.value));
+                    setConfig({ ...config, width: parseInt(e.target.value) });
                   }}
                 ></input>
               </div>
@@ -210,10 +185,13 @@ const PathFinding = () => {
                 <input
                   type="number"
                   min="0"
-                  max={height - 1}
-                  value={startRow}
+                  max={config.height - 1}
+                  value={config.startRow}
                   onChange={(e) => {
-                    setStartRow(parseInt(e.target.value));
+                    setConfig({
+                      ...config,
+                      startRow: parseInt(e.target.value),
+                    });
                   }}
                 ></input>
               </div>
@@ -222,10 +200,13 @@ const PathFinding = () => {
                 <input
                   type="number"
                   min="0"
-                  max={width - 1}
-                  value={startCol}
+                  max={config.width - 1}
+                  value={config.startCol}
                   onChange={(e) => {
-                    setStartCol(parseInt(e.target.value));
+                    setConfig({
+                      ...config,
+                      startCol: parseInt(e.target.value),
+                    });
                   }}
                 ></input>
               </div>
@@ -237,10 +218,13 @@ const PathFinding = () => {
                 <input
                   type="number"
                   min="0"
-                  max={height - 1}
-                  value={finishRow}
+                  max={config.height - 1}
+                  value={config.finishRow}
                   onChange={(e) => {
-                    setFinishRow(parseInt(e.target.value));
+                    setConfig({
+                      ...config,
+                      finishRow: parseInt(e.target.value),
+                    });
                   }}
                 ></input>
               </div>
@@ -249,10 +233,13 @@ const PathFinding = () => {
                 <input
                   type="number"
                   min="0"
-                  max={width - 1}
-                  value={finishCol}
+                  max={config.width - 1}
+                  value={config.finishCol}
                   onChange={(e) => {
-                    setFinishCol(parseInt(e.target.value));
+                    setConfig({
+                      ...config,
+                      finishCol: parseInt(e.target.value),
+                    });
                   }}
                 ></input>
               </div>
@@ -265,9 +252,9 @@ const PathFinding = () => {
           </div>
         </form>
       </div>
-      <div className="table">
-        <Table rows={nodes}></Table>
-      </div>
+
+      <Table rows={nodes}></Table>
+
       <button onClick={test}> test button</button>
     </div>
   );
