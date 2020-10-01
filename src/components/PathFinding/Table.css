@@ -1,6 +1,7 @@
 .table {
   display: flex;
   flex-direction: column;
+  margin-top: 50px;
 }
 .table .table-row:nth-child(2n) {
   margin-top: -1px;
