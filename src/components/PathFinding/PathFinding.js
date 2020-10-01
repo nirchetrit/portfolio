@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
+
 import "./PathFinding.css";
 import Table from "./Table";
 import dijkstra from "../../algorithms/dijkstra";
 import bfs from "../../algorithms/bestfirstsearch";
 import aStar from "../../algorithms/aStar";
-import util from "../gridFuncs";
+import { deafultConfig, generateNodes } from "../gridFuncs";
 import DropDown from "../DropDown";
 import { max } from "mathjs";
+// import {}
 
 const algoOptions = [
   { label: "Dijkstra", value: "dijkstra" },
@@ -14,28 +17,21 @@ const algoOptions = [
   { label: "BFS", value: "bfs" },
 ];
 const defaultConfiguration = {
-  WIDTH: 3,
-  HEIGHT: 3,
-  WEIGHTS: 0,
   SOLVERSPEED: 0.5,
 };
 
 const PathFinding = () => {
   const [algoSelected, setAlgoSelected] = useState(algoOptions[0]);
   const [nodes, setNodes] = useState([]);
-  const [config, setConfig] = useState(util.deafultConfig);
-
-  //form states
-
-  // const [configuration, setConfig] = useState(configuration);
-  // const [defaultVals, setDefaultVals] = useState(false);
-  //TODO FIX - SHOULD BE REF?
-  const [randomWeights, setRandomWeights] = useState(false);
-
-  ////FIX
+  const [config, setConfig] = useState(deafultConfig);
 
   const resetGrid = () => {
-    console.log("draw grid!");
+    setConfig(deafultConfig);
+    setNodes(
+      generateNodes(deafultConfig, (node) => {
+        editNode({ ...node, isWall: !node.isWall });
+      })
+    );
   };
 
   const test = () => {
@@ -55,7 +51,7 @@ const PathFinding = () => {
 
   ///componentDidMount
   useEffect(() => {
-    var nodes = util.generateNodes(util.deafultConfig, (node) => {
+    var nodes = generateNodes(deafultConfig, (node) => {
       editNode({ ...node, isWall: !node.isWall });
     });
     setNodes(nodes);
@@ -74,7 +70,9 @@ const PathFinding = () => {
       }
     }
   };
-  const getSolutionPath = (map, finishNode) => {
+  //nodes[0].length = width
+  // nodes.length = height
+  const getSolutionPath = (map, finishNode, height, width) => {
     let path = [];
     let prevNodeIndex = map[finishNode.index];
     while (prevNodeIndex !== undefined) {
@@ -117,7 +115,11 @@ const PathFinding = () => {
   };
   const submitForm = (e) => {
     e.preventDefault();
-    // drawGrid();
+    setNodes(
+      generateNodes(config, (node) => {
+        editNode({ ...node, isWall: !node.isWall });
+      })
+    );
   };
 
   return (
@@ -139,7 +141,7 @@ const PathFinding = () => {
         <button
           className="ui button"
           onClick={() => {
-            setRandomWeights(true);
+            // setRandomWeights(true);
           }}
         >
           Random Weights
