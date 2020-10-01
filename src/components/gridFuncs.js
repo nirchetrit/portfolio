@@ -1,4 +1,4 @@
-const generateNodes = (config, onClick) => {
+const generateNodes = (config) => {
   let nodes = [];
   for (let row = 0; row < config.height; row++) {
     let currentRow = [];
@@ -18,7 +18,6 @@ const generateNodes = (config, onClick) => {
         isWall: false,
         isSolution: false,
         weight: 0,
-        onClick: onClick,
       };
       currentRow.push(currentNode);
     }

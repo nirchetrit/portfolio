@@ -27,11 +27,10 @@ const PathFinding = () => {
 
   const resetGrid = () => {
     setConfig(deafultConfig);
-    setNodes(
-      generateNodes(deafultConfig, (node) => {
-        editNode({ ...node, isWall: !node.isWall });
-      })
-    );
+    setNodes(generateNodes(deafultConfig));
+  };
+  const onNodeClick = (node) => {
+    editNode({ ...node, isWall: !node.isWall });
   };
 
   const test = () => {
@@ -51,10 +50,7 @@ const PathFinding = () => {
 
   ///componentDidMount
   useEffect(() => {
-    var nodes = generateNodes(deafultConfig, (node) => {
-      editNode({ ...node, isWall: !node.isWall });
-    });
-    setNodes(nodes);
+    setNodes(generateNodes(deafultConfig));
   }, []);
 
   const colorVisitedNodes = async (visitedNodesByOrder, prev, ms) => {
@@ -118,11 +114,7 @@ const PathFinding = () => {
   };
   const submitForm = (e) => {
     e.preventDefault();
-    setNodes(
-      generateNodes(config, (node) => {
-        editNode({ ...node, isWall: !node.isWall });
-      })
-    );
+    setNodes(generateNodes(config));
   };
 
   return (
@@ -258,7 +250,7 @@ const PathFinding = () => {
         </form>
       </div>
 
-      <Table rows={nodes}></Table>
+      <Table rows={nodes} onNodeClick={onNodeClick}></Table>
 
       <button onClick={test}> test button</button>
     </div>
