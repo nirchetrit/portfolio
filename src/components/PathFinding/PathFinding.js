@@ -99,12 +99,15 @@ const PathFinding = () => {
       case "bfs":
         alert("not yet shlomi");
         break;
-      default:
+      case "a*":
         [prev, visitedNodesByOrder] = aStar(
           nodes,
           nodes[config.startRow][config.startCol],
           nodes[config.finishRow][config.finishCol]
         );
+        break;
+      default:
+        alert("select something");
     }
     let path = getSolutionPath(prev, nodes[config.finishRow][config.finishCol]);
     colorVisitedNodes(
