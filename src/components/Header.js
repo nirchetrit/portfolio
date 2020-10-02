@@ -21,6 +21,9 @@ const Header = () => {
       <Link href="/testpage" className="item">
         test page
       </Link>
+      <Link href="/sortingvisualizer" className="item">
+        sorting visualizer
+      </Link>
     </div>
   );
 };

@@ -7,6 +7,7 @@ import TestPage from "./components/TestPage";
 import Route from "./components/Route";
 import Header from "./components/Header";
 import PathFinding from "./components/PathFinding/PathFinding";
+import SortingVisualizer from "./components/sortingVisualizer/SortingVisualizer";
 import "./App.css";
 const colors = [
   {
@@ -76,6 +77,11 @@ export default () => {
         <Route path="/testpage">
           <div className="ui container">
             <TestPage></TestPage>
+          </div>
+        </Route>
+        <Route path="/sortingvisualizer">
+          <div className="ui container">
+            <SortingVisualizer></SortingVisualizer>
           </div>
         </Route>
       </div>

@@ -29,7 +29,7 @@ const PathFinding = () => {
     setConfig(deafultConfig);
     setNodes(generateNodes(deafultConfig));
   };
-  const onNodeClick = (node) => {
+  const toggleWall = (node) => {
     editNode({ ...node, isWall: !node.isWall });
   };
 
@@ -250,9 +250,9 @@ const PathFinding = () => {
         </form>
       </div>
 
-      <Table rows={nodes} onNodeClick={onNodeClick}></Table>
+      <Table rows={nodes} onNodeClick={toggleWall}></Table>
 
-      <button onClick={test}> test button</button>
+      {/* <button onClick={test}> test button</button> */}
     </div>
   );
 };
