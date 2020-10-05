@@ -1,70 +1,63 @@
 import React, { useState } from "react";
 import useInput from "../hooks/useInput";
 import { useForm } from "react-hook-form";
+import "./test.css";
 
-const TestPage = () => {
-  const { register, handleSubmit, errors } = useForm(); // initialize the hook
-  const onSubmit = (data) => {
-    console.log(data);
-  };
-  console.log("rendered");
+const DATA = [
+  { id: 1, value: 3 },
+  { id: 2, value: 10 },
+  { id: 3, value: 1 },
+  { id: 4, value: 8 },
+];
 
+const Item = React.memo(({ item, onRemove }) => {
+  console.log("Render:Item");
   return (
-    // <form onSubmit={handleSubmit(onSubmit)}>
-    //   <input name="firstname" ref={register} /> {/* register an input */}
-    //   <input name="lastname" ref={register({ required: true })} />
-    //   {errors.lastname && "Last name is required."}
-    //   <input name="age" ref={register({ pattern: /\d+/ })} />
-    //   {errors.age && "Please enter number for age."}
-    //   <input type="submit" />
-    // </form>
-    <form onSubmit={handleSubmit(onSubmit)}>
-      <input
-        type="number"
-        placeholder="Height"
-        name="Height"
-        ref={register({ required: true, max: 50, min: 0, maxLength: 80 })}
-      />
-      <input
-        type="number"
-        placeholder="Width"
-        name="Width"
-        ref={register({ required: true, max: 50, min: 0, maxLength: 100 })}
-      />
-      <input
-        type="text"
-        placeholder="Email"
-        name="Email"
-        ref={register({ required: true, pattern: /^\S+@\S+$/i })}
-      />
-      <input
-        type="tel"
-        placeholder="Mobile number"
-        name="Mobile number"
-        ref={register({ required: true, minLength: 6, maxLength: 12 })}
-      />
-      <select name="Title" ref={register({ required: true })}>
-        <option value="Mr">Mr</option>
-        <option value="Mrs">Mrs</option>
-        <option value="Miss">Miss</option>
-        <option value="Dr">Dr</option>
-      </select>
-
-      <input
-        name="Developer"
-        type="radio"
-        value="Yes"
-        ref={register({ required: true })}
-      />
-      <input
-        name="Developer"
-        type="radio"
-        value="No"
-        ref={register({ required: true })}
-      />
-
-      <input type="submit" />
-    </form>
+    <div className="item" onClick={() => onRemove(item)}>
+      {item.value}
+    </div>
   );
-};
+});
+
+class TestPage extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { data: DATA, counter: 0 };
+  }
+  addItem = (newItem) => {
+    this.setState((prevState) => ({ data: [...prevState.data, newItem] }));
+  };
+  removeItem = (item) => {
+    const data = this.state.data.filter((d) => d !== item);
+    this.setState({ data });
+  };
+  addCounter = () => {
+    this.setState((prevState) => ({ counter: prevState.counter + 1 }));
+  };
+  render() {
+    const { data, counter } = this.state;
+    console.log("Render: Test");
+    return (
+      <div className="Test">
+        {data.map((item) => {
+          return <Item key={item.id} item={item} onRemove={this.removeItem} />;
+        })}
+        <button
+          onClick={() =>
+            this.addItem({
+              id: Math.floor(Math.random() * 5000),
+              value: Math.floor(Math.random() * 5000),
+            })
+          }
+        >
+          addItem
+        </button>
+        <button onClick={this.addCounter} style={{ display: "block" }}>
+          {counter}
+        </button>
+      </div>
+    );
+  }
+}
+
 export default TestPage;
