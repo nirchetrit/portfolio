@@ -4,6 +4,8 @@ import Search from "./components/Search";
 import DropDown from "./components/DropDown";
 import Translate from "./components/Translate";
 import TestPage from "./components/TestPage";
+import Test2 from "./components/Test2";
+
 import Route from "./components/Route";
 import Header from "./components/Header";
 import PathFinding from "./components/PathFinding/PathFinding";
@@ -78,6 +80,9 @@ export default () => {
           <div className="ui container">
             <TestPage></TestPage>
           </div>
+          {/* <div className="ui container">
+            <Test2></Test2>
+          </div> */}
         </Route>
         <Route path="/sortingvisualizer">
           <div className="ui container">

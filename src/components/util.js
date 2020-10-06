@@ -5,7 +5,17 @@ const removeFromArray = (array, obj) => {
     }
   }
 };
+const swapElemsByIndex = (arr, i, j) => {
+  const temp = arr[i];
+  arr[i] = arr[j];
+  arr[j] = temp;
+};
+const timeOut = async (ms) => {
+  return new Promise((r) => setTimeout(r, ms));
+};
 
 module.exports = {
   removeFromArray,
+  swapElemsByIndex,
+  timeOut,
 };
