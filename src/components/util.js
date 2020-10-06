@@ -10,8 +10,8 @@ const swapElemsByIndex = (arr, i, j) => {
   arr[i] = arr[j];
   arr[j] = temp;
 };
-const timeOut = async (ms) => {
-  return new Promise((r) => setTimeout(r, ms));
+const timeOut = async (seconds) => {
+  return new Promise((r) => setTimeout(r, seconds * 1000));
 };
 
 module.exports = {

@@ -1,12 +1,17 @@
 import React from "react";
 
-const Stick = ({ value }) => {
-  return <div className="stick" style={{ height: value }}></div>;
+const Stick = ({ stick }) => {
+  return (
+    <div
+      className="stick"
+      style={{ height: `${stick.value}%`, background: `${stick.color}` }}
+    ></div>
+  );
 };
 
 const StickGraph = ({ sticks }) => {
   return sticks.map((stick) => {
-    return <Stick key={stick.id} value={stick.value}></Stick>;
+    return <Stick key={stick.id} stick={stick}></Stick>;
   });
 };
 export default StickGraph;

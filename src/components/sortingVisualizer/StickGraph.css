@@ -1,15 +1,14 @@
 .bar-graph {
-  margin-top: 100px;
   display: flex;
   flex-direction: row;
   align-items: flex-end;
-  border: 1px solid black;
-  width: fit-content;
-  height: 220px;
+  justify-content: space-between;
+  width: 100%;
+  height: 50vh;
+  border: 1px solid #000;
 }
 .stick {
-  background-color: blue;
-  width: 10px;
-  display: flex;
-  flex-direction: column-reverse;
+  /* background: #aaa; */
+  width: stretch;
+  border: 1px solid #eee;
 }

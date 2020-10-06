@@ -4,37 +4,41 @@ import StickGraph from "./StickGraph";
 import { swapElemsByIndex, timeOut } from "../util";
 import "./StickGraph.css";
 import { generateBars } from "../barGraphFuncs";
+import { createIncrementalCompilerHost } from "typescript";
+import { columnTransformDependencies } from "mathjs";
 const sortAlgoOptions = [
   { label: "bubbleSort", value: "bubblesort" },
   { label: "Merge Sort", value: "mergesort" },
   { label: "BFS", value: "bfs" },
 ];
 
-let staticBars = generateBars(110, 200);
+let staticBars = generateBars(50, 100);
+staticBars.forEach((bar) => {
+  bar.color = "#aaa";
+});
 const SortingVisualizer = () => {
   const [sortAlgo, setSortAlgo] = useState(sortAlgoOptions[0]);
   const [bars, setBars] = useState(staticBars);
-
-  ////performance - doubleEdit?([bar1,bar2,bar...])
-  const editBar = (bar) => {
-    const updatedBars = bars.map((currBar) => {
-      if (currBar.id === bar.id) {
-        currBar = bar;
-      }
-      return currBar;
-    });
-    setBars(updatedBars);
-  };
+  const animationSpeed = 0;
 
   const onSolveButtonClick = async () => {
     switch (sortAlgo.value) {
       case "bubblesort":
-        const solution = bubbleSort(bars); ///all the swapping steps
-        let test = [...bars];
-        for (let x in solution) {
-          await timeOut(1);
-          swapElemsByIndex(test, solution[x][0], solution[x][1]);
-          swapBars(solution[x][0], solution[x][1]);
+        const [sortedArr, solutionSteps] = bubbleSort(bars); ///all the swapping steps
+        for (let obj of solutionSteps) {
+          switch (obj.type) {
+            case "paint":
+              paintBars(obj.objects[0], obj.objects[1], "rgb(209, 170, 170)");
+              await timeOut(animationSpeed);
+              paintBars(obj.objects[0], obj.objects[1], "#aaa");
+              break;
+            case "swap":
+              swapBars(obj.objects[0], obj.objects[1]);
+              await timeOut(animationSpeed);
+              break;
+            default:
+              break;
+          }
         }
         break;
       case "mergesort":
@@ -44,34 +48,26 @@ const SortingVisualizer = () => {
         console.log("select an algo");
     }
   };
-  const testButton = async () => {
-    swapBars(0, 1);
-    await timeOut(1);
-    swapBars(1, 2);
-    await timeOut(1);
-    swapBars(2, 3);
-    await timeOut(1);
-    swapBars(3, 4);
-    await timeOut(1);
-    swapBars(4, 5);
-
-    // const tempVal = bars[0].value;
-    // editBar({ ...bars[0], value: bars[1].value });
-    // editBar({ ...bars[1], value: tempVal });
+  const testButton = () => {
+    paintBars(0, 1);
   };
 
   const swapBars = (i, j) => {
-    // const updatedArr = [...bars];
-    // const tempJ = updatedArr[j];
-    // updatedArr[j] = updatedArr[i];
-    // updatedArr[i] = tempJ;
-    // setBars(updatedArr);
-
-    const swappedArr = [...bars];
-    const tempVal = swappedArr[i].value;
-    swappedArr[i].value = bars[j].value;
-    swappedArr[j].value = tempVal;
-    setBars(swappedArr);
+    setBars((prevState) => {
+      let newState = [...prevState];
+      const temp = newState[i];
+      newState[i] = newState[j];
+      newState[j] = temp;
+      return newState;
+    });
+  };
+  const paintBars = (i, j, color) => {
+    setBars((prevState) => {
+      let newState = [...prevState];
+      newState[i].color = color;
+      newState[j].color = color;
+      return newState;
+    });
   };
 
   return (
@@ -85,28 +81,13 @@ const SortingVisualizer = () => {
       <div className="bar-graph">
         <StickGraph sticks={bars}></StickGraph>
       </div>
-
       <button onClick={onSolveButtonClick}>solve</button>
-
       <button onClick={testButton}>testbutton</button>
     </div>
   );
 };
 export default SortingVisualizer;
 
-const bubbleSort = (arr) => {
-  const solution = [];
-  const sortedArr = [...arr];
-  for (let i = 0; i < arr.length - 1; i++) {
-    for (let j = 0; j < arr.length - i - 1; j++) {
-      if (sortedArr[j].value > sortedArr[j + 1].value) {
-        swapElemsByIndex(sortedArr, j, j + 1);
-        solution.push([j, j + 1]);
-      }
-    }
-  }
-  return solution;
-};
 const mergeSort = (unsortedArr) => {
   const arr = [...unsortedArr];
   if (arr.length <= 1) {
@@ -125,4 +106,23 @@ const merge = (arr1, arr2) => {
     else sorted.push(arr2.shift());
   }
   return sorted.concat(arr1.slice().concat(arr2.slice()));
+};
+
+const bubbleSort = (defaultArr) => {
+  const arr = [...defaultArr];
+  const solution = [];
+  for (let i = 0; i < arr.length - 1; i++) {
+    for (let j = 0; j < arr.length - i - 1; j++) {
+      solution.push({ type: "paint", objects: [j, j + 1] });
+      if (arr[j].value > arr[j + 1].value) {
+        //swap
+        const temp = arr[j];
+        arr[j] = arr[j + 1];
+        arr[j + 1] = temp;
+        //saving the step
+        solution.push({ type: "swap", objects: [j, j + 1] });
+      }
+    }
+  }
+  return [arr, solution];
 };
