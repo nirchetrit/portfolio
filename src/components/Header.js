@@ -4,19 +4,7 @@ const Header = () => {
   return (
     <div className="ui secondarypointing menu">
       <Link href="/" className="item">
-        Accordion
-      </Link>
-      <Link href="/list" className="item">
-        list
-      </Link>
-      <Link href="/dropdown" className="item">
-        dropdown
-      </Link>
-      <Link href="/translate" className="item">
-        translate
-      </Link>
-      <Link href="/pathfinding" className="item">
-        path finding
+        Path finding
       </Link>
       <Link href="/testpage" className="item">
         test page

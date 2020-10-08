@@ -3,9 +3,9 @@ import { useForm } from "react-hook-form";
 
 import "./PathFinding.css";
 import Table from "./Table";
-import dijkstra from "../../algorithms/dijkstra";
-import bfs from "../../algorithms/bestfirstsearch";
-import aStar from "../../algorithms/aStar";
+import dijkstra from "../../algorithms/pathFinding/dijkstra";
+import bfs from "../../algorithms/pathFinding/bestfirstsearch";
+import aStar from "../../algorithms/pathFinding/aStar";
 import { deafultConfig, generateNodes } from "../gridFuncs";
 import DropDown from "../DropDown";
 import { max } from "mathjs";

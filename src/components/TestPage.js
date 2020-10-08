@@ -1,7 +1,4 @@
 import React, { useState } from "react";
-import useInput from "../hooks/useInput";
-import { useForm } from "react-hook-form";
-import "./test.css";
 
 const DATA = [
   { id: 1, value: 3 },

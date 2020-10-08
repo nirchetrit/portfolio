@@ -22,8 +22,8 @@
 // 22
 
 import { FibonacciHeap } from "@tyriar/fibonacci-heap";
-import { getNeighbours } from "../components/gridFuncs";
-import { removeFromArray } from "../components/util";
+import { getNeighbours } from "../../components/gridFuncs";
+import { removeFromArray } from "../../components/util";
 
 // 23      return dist[], prev[]
 const dijkstra = (grid, startNode, finishNode) => {

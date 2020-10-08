@@ -4,7 +4,10 @@ const Stick = ({ stick }) => {
   return (
     <div
       className="stick"
-      style={{ height: `${stick.value}%`, background: `${stick.color}` }}
+      style={{
+        height: `${stick.value}%`,
+        background: `${stick.color || "#aaa"}`,
+      }}
     ></div>
   );
 };
