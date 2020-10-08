@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useReducer } from "react";
 import DropDown from "../DropDown";
 import StickGraph from "./StickGraph";
 import { swapElemsByIndex, timeOut } from "../util";
@@ -6,6 +6,7 @@ import "./StickGraph.css";
 import { generateBars } from "../barGraphFuncs";
 import { bubbleSort } from "../../algorithms/sorting/bubbleSort";
 import { mergeSort } from "../../algorithms/sorting/mergeSort";
+const useForceRerender = () => useReducer((state) => !state, false)[1];
 
 const sortAlgoOptions = [
   { label: "bubbleSort", value: "bubblesort" },
@@ -21,16 +22,17 @@ let staticBarsAmount = 30;
 let staticBars = generateBars(staticBarsAmount, 100);
 
 const SortingVisualizer = () => {
+  const forceRerender = useForceRerender();
+
   //------------------------------states---------------------------------------/////
   const [sortAlgo, setSortAlgo] = useState(sortAlgoOptions[0]);
   const [bars, setBars] = useState(staticBars);
   const [barsAmount, setBarsAmount] = useState(staticBarsAmount);
-  const [animationSpeed, setAnimationSpeed] = useState(
-    animationSpeedOptions[0]
-  );
+  // const [animationSpeed, setAnimationSpeed] = useState(
+  //   animationSpeedOptions[0]
+  // );
+  const animationSpeed = useRef(animationSpeedOptions[0]);
   const [isSorting, setIsSorting] = useState(false);
-  // const isSorting = useRef(false);
-  // const [skipAnimation, setSkipAnimation] = useState(false);
   const skipAnimation = useRef(false);
 
   //------------------------------states---------------------------------------/////
@@ -42,16 +44,18 @@ const SortingVisualizer = () => {
     for (let obj of solutionSteps) {
       if (skipAnimation.current) {
         setBars(sortedArr);
+        break;
       } else {
+        console.log("animation Speed", animationSpeed.current);
         switch (obj.type) {
           case "paint":
             paintBars(obj.objects[0], obj.objects[1], "rgb(209, 170, 170)");
-            await timeOut(animationSpeed.value);
+            await timeOut(animationSpeed.current.value);
             paintBars(obj.objects[0], obj.objects[1], "#aaa");
             break;
           case "swap":
             swapBars(obj.objects[0], obj.objects[1]);
-            await timeOut(animationSpeed.value);
+            await timeOut(animationSpeed.current.value);
             break;
           default:
             break;
@@ -89,7 +93,6 @@ const SortingVisualizer = () => {
       default:
         console.log("select an algo");
     }
-
     setIsSorting(false);
     skipAnimation.current = false;
   };
@@ -135,8 +138,12 @@ const SortingVisualizer = () => {
       <DropDown
         label={"select animation speed"}
         options={animationSpeedOptions}
-        selected={animationSpeed}
-        onSelectedChange={setAnimationSpeed}
+        selected={animationSpeed.current}
+        onSelectedChange={(v) => {
+          animationSpeed.current = v;
+          console.log("onSelectedChange", animationSpeed.current);
+          forceRerender();
+        }}
       ></DropDown>
       <div>
         <label>How Many bars to draw ?</label>
@@ -151,7 +158,6 @@ const SortingVisualizer = () => {
         <StickGraph sticks={bars}></StickGraph>
       </div>
       <button onClick={onSolveButtonClick}>solve</button>
-      <button onClick={testButton}>testbutton</button>
       {isSorting ? (
         <button onClick={() => (skipAnimation.current = true)}>
           skipAnimation
@@ -159,6 +165,7 @@ const SortingVisualizer = () => {
       ) : (
         <button onClick={resetButton}>reset</button>
       )}
+      <button onClick={testButton}>testbutton</button>
     </div>
   );
 };
