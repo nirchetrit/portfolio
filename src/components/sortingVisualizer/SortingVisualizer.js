@@ -6,6 +6,7 @@ import "./StickGraph.css";
 import { generateBars } from "../barGraphFuncs";
 import { bubbleSort } from "../../algorithms/sorting/bubbleSort";
 import { mergeSort } from "../../algorithms/sorting/mergeSort";
+import { sort } from "mathjs";
 const useForceRerender = () => useReducer((state) => !state, false)[1];
 
 const sortAlgoOptions = [
@@ -31,22 +32,27 @@ const SortingVisualizer = () => {
   // const [animationSpeed, setAnimationSpeed] = useState(
   //   animationSpeedOptions[0]
   // );
-  const animationSpeed = useRef(animationSpeedOptions[0]);
+
   const [isSorting, setIsSorting] = useState(false);
   const skipAnimation = useRef(false);
+  const animationSpeed = useRef(animationSpeedOptions[0]);
+  const [testState, setTestState] = useState(false);
 
   //------------------------------states---------------------------------------/////
   useEffect(() => {
     setBars(generateBars(barsAmount, 100));
   }, [barsAmount]);
+  // useInterval(counter++,skip)
 
-  const visualBubbleSort = async (solutionSteps, sortedArr) => {
+  const visualBubbleSort = async (solutionSteps, sortedArr, index) => {
+    setTimeout(() => {
+      index++;
+    }, 1000);
     for (let obj of solutionSteps) {
       if (skipAnimation.current) {
         setBars(sortedArr);
         break;
       } else {
-        console.log("animation Speed", animationSpeed.current);
         switch (obj.type) {
           case "paint":
             paintBars(obj.objects[0], obj.objects[1], "rgb(209, 170, 170)");
@@ -67,6 +73,7 @@ const SortingVisualizer = () => {
   const onSolveButtonClick = async () => {
     let [sortedArr, solutionSteps] = [];
     setIsSorting((prev) => true);
+    // const [sortedArr, solutionSteps] = sort(bars) ///all the swapping steps
     switch (sortAlgo.value) {
       case "bubblesort":
         [sortedArr, solutionSteps] = bubbleSort(bars); ///all the swapping steps
@@ -99,7 +106,11 @@ const SortingVisualizer = () => {
   const testButton = () => {
     paintBars(0, 1);
   };
-  const resetButton = () => {};
+  const resetButton = () => {
+    console.log("reset");
+    setTestState(true);
+    // setBars(staticBars);
+  };
 
   const swapBars = (i, j) => {
     setBars((prevState) => {
@@ -165,7 +176,7 @@ const SortingVisualizer = () => {
       ) : (
         <button onClick={resetButton}>reset</button>
       )}
-      <button onClick={testButton}>testbutton</button>
+      <button onClick={resetButton}>testbutton</button>
     </div>
   );
 };
