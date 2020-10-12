@@ -6,8 +6,73 @@ import "./StickGraph.css";
 import { generateBars } from "../barGraphFuncs";
 import { bubbleSort } from "../../algorithms/sorting/bubbleSort";
 import { mergeSort } from "../../algorithms/sorting/mergeSort";
-import { sort } from "mathjs";
+import { forEach, sort } from "mathjs";
+import useInterval from "../useInterval";
+import { onSolveButtonClick } from './sortingVisualizerHelpers'
 const useForceRerender = () => useReducer((state) => !state, false)[1];
+const getSwappedArrayElementsByIndices = (arr, index1, index2) => {
+  let newState = [...arr];
+  const temp = newState[index1];
+  newState[index1] = newState[index2];
+  newState[index2] = temp;
+  return newState;
+}
+
+const useVisualBubbleSort = ({ arr, delay, onSwap, onPaint, onFinish }) => {
+  const [index, setIndex] = useState(0)
+  const [shouldRun, setShouldRun] = useState(false)
+  const [shouldSolve, setShouldSolve] = useState(true)
+  const [updatedSolutionSteps, setUpdatedSolutionSteps] = useState([])
+
+  if (arr && arr.length && index === 0 && shouldSolve) {
+    ///should run only when there is no solution for the new arr
+    let [sortedArr, solutionSteps] = bubbleSort(arr)
+    console.log('solved the algo - should appear once for every new unsorted arr');
+    let temp = solutionSteps.reduce((acc, curr) => {
+      if (curr.type === 'paint') {
+        return acc.concat({ ...curr, color: 'rgb(209,170,170)' }).concat({ ...curr, color: '#aaa' })
+      }
+      else {
+        return acc.concat(curr)
+      }
+    }, [])
+    setUpdatedSolutionSteps(temp)
+    setShouldSolve(false)//because already solved
+    setShouldRun(true)///should visualize the solution..
+  }
+  useInterval(() => {
+    if (index === updatedSolutionSteps.length) {/// - reach to end of array
+      setIndex(0) /// need to initialize the index to 0 again
+      onFinish()
+      setShouldRun(false)///should stop visualizing
+      setShouldSolve(true)///should be able to solve again
+      return
+    }
+    let obj = updatedSolutionSteps[index]
+    switch (obj.type) {
+      case "paint":
+        onPaint([obj.objects[0], obj.objects[1]], obj.color)
+        break;
+      case "swap":
+        onSwap(obj.objects[0], obj.objects[1])
+        break;
+      default:
+        break;
+    }
+    setIndex(prev => prev + 1)
+  }, shouldRun ? delay : null)
+
+}
+
+
+let initialBarsAmount = 5;
+const useGeneratedBars = (barsAmount) => {
+  const [bars, setBars] = useState(generateBars(barsAmount, 100));
+  useEffect(() => {
+    setBars(generateBars(barsAmount, 100));
+  }, [barsAmount])
+  return [bars, setBars]
+}
 
 const sortAlgoOptions = [
   { label: "bubbleSort", value: "bubblesort" },
@@ -15,128 +80,64 @@ const sortAlgoOptions = [
   { label: "BFS", value: "bfs" },
 ];
 const animationSpeedOptions = [
-  { label: "fast", value: 0 },
-  { label: "normal", value: 0.5 },
-  { label: "slow", value: 1 },
+  { label: "fast", value: 0.1 },
+  { label: "normal", value: 500 },
+  { label: "slow", value: 1000 },
+  { label: 'skip anim', value: 0 }
 ];
-let staticBarsAmount = 30;
-let staticBars = generateBars(staticBarsAmount, 100);
+
 
 const SortingVisualizer = () => {
   const forceRerender = useForceRerender();
 
   //------------------------------states---------------------------------------/////
   const [sortAlgo, setSortAlgo] = useState(sortAlgoOptions[0]);
-  const [bars, setBars] = useState(staticBars);
-  const [barsAmount, setBarsAmount] = useState(staticBarsAmount);
-  // const [animationSpeed, setAnimationSpeed] = useState(
-  //   animationSpeedOptions[0]
-  // );
-
+  const [barsAmount, setBarsAmount] = useState(initialBarsAmount);
+  const [bars, setBars] = useGeneratedBars(barsAmount);
   const [isSorting, setIsSorting] = useState(false);
-  const skipAnimation = useRef(false);
-  const animationSpeed = useRef(animationSpeedOptions[0]);
-  const [testState, setTestState] = useState(false);
-
+  // const skipAnimation = useRef(false);
+  // const animationSpeed = useRef(animationSpeedOptions[0]);
+  const [skipAnimation, setSkipAnimation] = useState(false)
+  const [animationSpeed, setAnimationSpeed] = useState(animationSpeedOptions[0]);
   //------------------------------states---------------------------------------/////
-  useEffect(() => {
-    setBars(generateBars(barsAmount, 100));
-  }, [barsAmount]);
-  // useInterval(counter++,skip)
 
-  const visualBubbleSort = async (solutionSteps, sortedArr, index) => {
-    setTimeout(() => {
-      index++;
-    }, 1000);
-    for (let obj of solutionSteps) {
-      if (skipAnimation.current) {
-        setBars(sortedArr);
-        break;
-      } else {
-        switch (obj.type) {
-          case "paint":
-            paintBars(obj.objects[0], obj.objects[1], "rgb(209, 170, 170)");
-            await timeOut(animationSpeed.current.value);
-            paintBars(obj.objects[0], obj.objects[1], "#aaa");
-            break;
-          case "swap":
-            swapBars(obj.objects[0], obj.objects[1]);
-            await timeOut(animationSpeed.current.value);
-            break;
-          default:
-            break;
-        }
-      }
-    }
-  };
 
-  const onSolveButtonClick = async () => {
-    let [sortedArr, solutionSteps] = [];
-    setIsSorting((prev) => true);
-    // const [sortedArr, solutionSteps] = sort(bars) ///all the swapping steps
-    switch (sortAlgo.value) {
-      case "bubblesort":
-        [sortedArr, solutionSteps] = bubbleSort(bars); ///all the swapping steps
-        await visualBubbleSort(solutionSteps, sortedArr);
-        break;
-      case "mergesort":
-        [sortedArr, solutionSteps] = mergeSort(bars);
-        setBars(sortedArr);
-        for (let obj of solutionSteps) {
-          switch (obj.type) {
-            case "compare":
-              console.log("comapre");
-              break;
-            case "cutInHalf":
-              let left = obj.objects[0];
-              let right = obj.objects[1];
-              console.log("left:", left, "right:", right);
-              break;
-            default:
-              break;
-          }
-        }
-        break;
-      default:
-        console.log("select an algo");
-    }
-    setIsSorting(false);
-    skipAnimation.current = false;
-  };
   const testButton = () => {
     paintBars(0, 1);
   };
   const resetButton = () => {
     console.log("reset");
-    setTestState(true);
-    // setBars(staticBars);
+    paintBars([1, 2, 3], 'black')
+
+    console.log(bars);
   };
 
   const swapBars = (i, j) => {
     setBars((prevState) => {
-      let newState = [...prevState];
-      const temp = newState[i];
-      newState[i] = newState[j];
-      newState[j] = temp;
-      return newState;
+      return getSwappedArrayElementsByIndices(prevState, i, j)
     });
   };
 
-  const paintBars = (i, j, color) => {
+  const paintBars = (indices, color) => {
     setBars((prevState) => {
       let newState = [...prevState];
-      newState[i].color = color;
-      newState[j].color = color;
+      indices.forEach(index => {
+        newState[index].color = color
+      })
       return newState;
     });
   };
-  const onBarsAmountChange = (e) => {
-    if (e) {
-      setBarsAmount(e);
-    } else {
-      setBarsAmount(staticBarsAmount);
-    }
+  const onBarsAmountChange = (amount) => {
+    setBarsAmount(amount || initialBarsAmount)
   };
+
+  let shouldBubblesortRun = isSorting && sortAlgo.value === 'bubblesort'
+
+  useVisualBubbleSort({ arr: shouldBubblesortRun ? bars : null, delay: animationSpeed.value, onSwap: swapBars, onPaint: paintBars, onFinish: () => { setIsSorting(false) } })
+
+  const onSolve = () => {
+    setIsSorting(true)
+  }
 
   return (
     <div>
@@ -149,12 +150,8 @@ const SortingVisualizer = () => {
       <DropDown
         label={"select animation speed"}
         options={animationSpeedOptions}
-        selected={animationSpeed.current}
-        onSelectedChange={(v) => {
-          animationSpeed.current = v;
-          console.log("onSelectedChange", animationSpeed.current);
-          forceRerender();
-        }}
+        selected={animationSpeed}
+        onSelectedChange={setAnimationSpeed}
       ></DropDown>
       <div>
         <label>How Many bars to draw ?</label>
@@ -168,14 +165,14 @@ const SortingVisualizer = () => {
       <div className="bar-graph">
         <StickGraph sticks={bars}></StickGraph>
       </div>
-      <button onClick={onSolveButtonClick}>solve</button>
+      <button onClick={onSolve}>solve</button>
       {isSorting ? (
-        <button onClick={() => (skipAnimation.current = true)}>
+        <button onClick={() => (setSkipAnimation(skipAnimation))}>
           skipAnimation
         </button>
       ) : (
-        <button onClick={resetButton}>reset</button>
-      )}
+          <button onClick={resetButton}>reset</button>
+        )}
       <button onClick={resetButton}>testbutton</button>
     </div>
   );
