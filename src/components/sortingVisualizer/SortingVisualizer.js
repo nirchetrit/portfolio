@@ -20,32 +20,19 @@ const getSwappedArrayElementsByIndices = (arr, index1, index2) => {
 
 const useVisualBubbleSort = ({ arr, delay, onSwap, onPaint, onFinish }) => {
   const [index, setIndex] = useState(0)
-  const [shouldRun, setShouldRun] = useState(false)
+  const [shouldRunWithDelay, setShouldRunWithDelay] = useState(false)
   const [shouldSolve, setShouldSolve] = useState(true)
   const [updatedSolutionSteps, setUpdatedSolutionSteps] = useState([])
+  const [stop, setStop] = useState(true)
 
-  if (arr && arr.length && index === 0 && shouldSolve) {
-    ///should run only when there is no solution for the new arr
-    let [sortedArr, solutionSteps] = bubbleSort(arr)
-    console.log('solved the algo - should appear once for every new unsorted arr');
-    let temp = solutionSteps.reduce((acc, curr) => {
-      if (curr.type === 'paint') {
-        return acc.concat({ ...curr, color: 'rgb(209,170,170)' }).concat({ ...curr, color: '#aaa' })
-      }
-      else {
-        return acc.concat(curr)
-      }
-    }, [])
-    setUpdatedSolutionSteps(temp)
-    setShouldSolve(false)//because already solved
-    setShouldRun(true)///should visualize the solution..
-  }
-  useInterval(() => {
+
+  const runOneStep = () => {
     if (index === updatedSolutionSteps.length) {/// - reach to end of array
       setIndex(0) /// need to initialize the index to 0 again
       onFinish()
-      setShouldRun(false)///should stop visualizing
+      setStop(true)///should stop visualizing
       setShouldSolve(true)///should be able to solve again
+      setShouldRunWithDelay(false)
       return
     }
     let obj = updatedSolutionSteps[index]
@@ -60,14 +47,52 @@ const useVisualBubbleSort = ({ arr, delay, onSwap, onPaint, onFinish }) => {
         break;
     }
     setIndex(prev => prev + 1)
-  }, shouldRun ? delay : null)
+  }
+  const solve = () => {
+    if (arr && arr.length && index === 0 && shouldSolve) {
+      ///should run only when there is no solution for the new arr
+      let [sortedArr, solutionSteps] = bubbleSort(arr)
+      console.log('solved the algo - should appear once for every new unsorted arr');
+      let temp = solutionSteps.reduce((acc, curr) => {
+        if (curr.type === 'paint') {
+          return acc.concat({ ...curr, color: 'rgb(209,170,170)' }).concat({ ...curr, color: '#aaa' })
+        }
+        else {
+          return acc.concat(curr)
+        }
+      }, [])
+      setUpdatedSolutionSteps(temp)
+      setShouldSolve(false)//because already solved
+      setStop(false)
 
+    }
+  }
+  const run = () => {
+    if (!stop) {
+      if (delay === 0) {
+        runOneStep()
+        if (shouldRunWithDelay) {
+          setShouldRunWithDelay(false)
+        }
+      }
+      else {
+        if (!shouldRunWithDelay) {
+          setShouldRunWithDelay(true)
+        }
+      }
+    }
+  }
+  solve()
+  run()
+  useInterval(() => {
+    runOneStep()
+  }, shouldRunWithDelay ? delay : null)
 }
 
 
-let initialBarsAmount = 5;
+let initialBarsAmount = 50;
 const useGeneratedBars = (barsAmount) => {
-  const [bars, setBars] = useState(generateBars(barsAmount, 100));
+  const [bars, setBars] = useState([]);
   useEffect(() => {
     setBars(generateBars(barsAmount, 100));
   }, [barsAmount])
