@@ -18,11 +18,11 @@ export default () => {
             <PathFinding></PathFinding>
           </div>
         </Route>
-        <Route path="/testpage">
+        {/* <Route path="/testpage">
           <div className="ui container">
             <TestPage></TestPage>
           </div>
-        </Route>
+        </Route> */}
         <Route path="/sortingvisualizer">
           <div className="ui container">
             <SortingVisualizer></SortingVisualizer>

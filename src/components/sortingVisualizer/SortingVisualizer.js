@@ -113,7 +113,7 @@ const animationSpeedOptions = [
 
 
 const SortingVisualizer = () => {
-  const forceRerender = useForceRerender();
+  // const forceRerender = useForceRerender();
 
   //------------------------------states---------------------------------------/////
   const [sortAlgo, setSortAlgo] = useState(sortAlgoOptions[0]);
@@ -133,7 +133,6 @@ const SortingVisualizer = () => {
   const resetButton = () => {
     console.log("reset");
     paintBars([1, 2, 3], 'black')
-
     console.log(bars);
   };
 

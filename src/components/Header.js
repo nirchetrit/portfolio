@@ -6,9 +6,9 @@ const Header = () => {
       <Link href="/" className="item">
         Path finding
       </Link>
-      <Link href="/testpage" className="item">
+      {/* <Link href="/testpage" className="item">
         test page
-      </Link>
+      </Link> */}
       <Link href="/sortingvisualizer" className="item">
         sorting visualizer
       </Link>

@@ -66,8 +66,7 @@ const PathFinding = () => {
       }
     }
   };
-  //nodes[0].length = width
-  // nodes.length = height
+
   const getSolutionPath = (map, finishNode, height, width) => {
     let path = [];
     let prevNodeIndex = map[finishNode.index];
